@@ -1,140 +1,84 @@
 import {
-  BadRequestException,
-  Body,
   Controller,
-  Delete,
   Get,
-  NotFoundException,
-  Param,
   Post,
   Put,
-  Query,
+  Delete,
+  Param,
+  Body,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-
-interface Maintenance {
-  id: string;
-  carId: string;
-  clientId: string;
-  serviceType:
-    | 'oil_change'
-    | 'tire_rotation'
-    | 'brake_service'
-    | 'battery_check';
-  serviceDate: string;
-  cost: number;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-}
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
+import { MaintenanceService } from './maintenance.service';
+import {
+  CreateMaintenanceDto,
+  MaintenanceDto,
+  UpdateMaintenanceDto,
+} from './dto/maintenanceController.dto';
 
 @ApiTags('Maintenance')
 @Controller('maintenance')
 export class MaintenanceController {
-  private maintenance: Maintenance[] = [
-    {
-      id: '1',
-      carId: '1',
-      clientId: '1',
-      serviceType: 'oil_change',
-      serviceDate: '2024-01-15',
-      cost: 80,
-      status: 'completed',
-    },
-    {
-      id: '2',
-      carId: '2',
-      clientId: '2',
-      serviceType: 'battery_check',
-      serviceDate: '2024-01-20',
-      cost: 50,
-      status: 'scheduled',
-    },
-  ];
+  constructor(private readonly maintenanceService: MaintenanceService) {}
 
   @Get()
-  getMaintenance(@Query('status') status?: string) {
-    if (status) {
-      return this.maintenance.filter((service) => service.status === status);
-    }
-    return this.maintenance;
+  @ApiOperation({ summary: 'Obtener todos los mantenimientos' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de mantenimientos',
+    type: [MaintenanceDto],
+  })
+  async findAll() {
+    return await this.maintenanceService.findAll();
   }
 
   @Get(':id')
-  getMaintenanceService(@Param('id') id: string) {
-    const service = this.maintenance.find((service) => service.id === id);
-    if (!service) {
-      throw new NotFoundException(
-        `Maintenance service with id ${id} not found`,
-      );
-    }
-    return service;
+  @ApiOperation({ summary: 'Obtener mantenimiento por ID' })
+  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
+  @ApiResponse({
+    status: 200,
+    description: 'Mantenimiento encontrado',
+    type: MaintenanceDto,
+  })
+  async findOne(@Param('id') id: string) {
+    return await this.maintenanceService.findOne(id);
   }
 
   @Post()
-  createMaintenance(@Body() body: Omit<Maintenance, 'id'>) {
-    if (body.cost <= 0) {
-      throw new BadRequestException('Cost must be greater than 0');
-    }
-
-    const newService = {
-      ...body,
-      id: `${new Date().getTime()}`,
-    };
-    this.maintenance.push(newService);
-    return newService;
-  }
-
-  @Delete(':id')
-  deleteMaintenance(@Param('id') id: string) {
-    const position = this.maintenance.findIndex((service) => service.id === id);
-    if (position === -1) {
-      throw new NotFoundException(
-        `Maintenance service with id ${id} not found`,
-      );
-    }
-    this.maintenance = this.maintenance.filter((service) => service.id !== id);
-    return {
-      message: 'Maintenance service deleted',
-    };
+  @ApiOperation({ summary: 'Crear mantenimiento' })
+  @ApiBody({ type: CreateMaintenanceDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Mantenimiento creado',
+    type: MaintenanceDto,
+  })
+  async create(@Body() body: CreateMaintenanceDto) {
+    return await this.maintenanceService.createMaintenance(body);
   }
 
   @Put(':id')
-  updateMaintenance(
-    @Param('id') id: string,
-    @Body() changes: Partial<Maintenance>,
-  ) {
-    const position = this.maintenance.findIndex((service) => service.id === id);
-    if (position === -1) {
-      throw new NotFoundException(
-        `Maintenance service with id ${id} not found`,
-      );
-    }
-
-    if (changes.cost && changes.cost <= 0) {
-      throw new BadRequestException('Cost must be greater than 0');
-    }
-
-    const currentData = this.maintenance[position];
-    const updatedService = {
-      ...currentData,
-      ...changes,
-    };
-    this.maintenance[position] = updatedService;
-    return updatedService;
+  @ApiOperation({ summary: 'Actualizar mantenimiento por ID' })
+  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
+  @ApiBody({ type: UpdateMaintenanceDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Mantenimiento actualizado',
+    type: MaintenanceDto,
+  })
+  async update(@Param('id') id: string, @Body() changes: UpdateMaintenanceDto) {
+    return await this.maintenanceService.updateMaintenance(id, changes);
   }
 
-  @Post(':id/complete')
-  completeMaintenance(@Param('id') id: string) {
-    const service = this.maintenance.find((service) => service.id === id);
-    if (!service) {
-      throw new NotFoundException(
-        `Maintenance service with id ${id} not found`,
-      );
-    }
-
-    service.status = 'completed';
-    return {
-      message: 'Maintenance service completed',
-      service,
-    };
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar mantenimiento por ID' })
+  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
+  @ApiResponse({ status: 200, description: 'Mantenimiento eliminado' })
+  async delete(@Param('id') id: string) {
+    return await this.maintenanceService.deleteMaintenance(id);
   }
 }
