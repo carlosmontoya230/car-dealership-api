@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthSsoModule } from './auth/dto/auth-sso.module';
-import { CarsModule } from './cars/cars.module';
+import { CarsModule } from './vehicle/vehicle.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
