@@ -1,0 +1,20 @@
+import { Module } from '@nestjs/common';
+import { AuthSsoController } from './auth-sso.controller';
+
+import { config } from 'dotenv';
+import { AuthSsoService } from './auth-sso.service';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from '../../common/guards/jwt.strategy';
+import { UsersService } from '../../users/users.service';
+config();
+@Module({
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '24h' },
+    }),
+  ],
+  controllers: [AuthSsoController],
+  providers: [AuthSsoService, UsersService, JwtStrategy],
+})
+export class AuthSsoModule {}
