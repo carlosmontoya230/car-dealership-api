@@ -30,8 +30,8 @@ export class AuthSsoService {
         throw new HttpException('INVALID_PASSWORD', 403);
       }
 
-      const rol = findUser.rolUsers.map((rolUser) => rolUser.rol.name);
-      const payload = { email: findUser.email, sub: findUser.id, rol };
+      const roles = findUser.rolUsers.map((rolUser) => rolUser.rol.name);
+      const payload = { email: findUser.email, sub: findUser.id, roles };
       const token = this.jwtService.sign(payload);
 
       return {

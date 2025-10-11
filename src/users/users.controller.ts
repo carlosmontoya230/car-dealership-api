@@ -7,8 +7,10 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -17,6 +19,9 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/createUser.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../common/guards/rolesguard.service';
+import { Roles } from '../common/decorators/rolDecorator.service';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -39,6 +44,9 @@ export class UsersController {
     return { message: 'Usuario creado correctamente.' };
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Get('/all/Users/')
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios.' })
@@ -46,6 +54,9 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Get('/user/:email')
   @ApiOperation({ summary: 'Obtener usuario por email' })
   @ApiParam({
@@ -70,6 +81,9 @@ export class UsersController {
     return await this.usersService.findOne(email);
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Post('/update/:email')
   @ApiOperation({ summary: 'Actualizar usuario por email' })
   @ApiParam({
@@ -105,6 +119,9 @@ export class UsersController {
     return await this.usersService.updateUser(email, userDto);
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Delete('/delete-user/:id')
   @ApiOperation({ summary: 'Eliminar usuario por ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
