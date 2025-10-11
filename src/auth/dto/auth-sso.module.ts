@@ -4,8 +4,8 @@ import { AuthSsoController } from './auth-sso.controller';
 import { config } from 'dotenv';
 import { AuthSsoService } from './auth-sso.service';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
-import { JwtStrategy } from 'src/common/guards/jwt.strategy';
+import { JwtStrategy } from '../../common/guards/jwt.strategy';
+import { UsersService } from '../../users/users.service';
 config();
 @Module({
   imports: [

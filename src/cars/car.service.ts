@@ -39,6 +39,8 @@ export class CarService {
   ];
 
   async findAll(type?: string, status?: string): Promise<CarDto[]> {
+    console.log('🚀 ~ CarService ~ findAll ~ status:', status);
+    console.log('🚀 ~ CarService ~ findAll ~ type:', type);
     let filteredCars = this.cars;
     if (type) {
       filteredCars = filteredCars.filter((car) => car.type === type);
