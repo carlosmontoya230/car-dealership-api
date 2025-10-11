@@ -1,11 +1,11 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcrypt';
-import { LoginDto } from './create-auth-sso.dto';
-import { UsersService } from '../../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { compare } from 'bcrypt';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../users/entities/users.entity';
+import { UsersService } from '../../users/users.service';
+import { LoginDto } from './create-auth-sso.dto';
 
 @Injectable()
 export class AuthSsoService {
@@ -19,9 +19,7 @@ export class AuthSsoService {
   async auth(loginDto: LoginDto) {
     try {
       const { email, password } = loginDto;
-      const findUser = await this.userEntityRepository.findOne({
-        where: { email },
-      });
+      const findUser = await this.usersService.findOne(email);
 
       if (!findUser) {
         throw new HttpException('USER_NOT_FOUND', 404);
