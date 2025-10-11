@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import SwaggerUI from 'swagger-ui-express';
+
 
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';

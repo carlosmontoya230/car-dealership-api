@@ -56,6 +56,7 @@ export class UsersService {
           isActive: 1,
           userEmail: userDto.email,
           rolId: rolId,
+          user: newUser,
         });
         await this.rolUserEntityRepository.save(rolUsuario);
       }
@@ -71,6 +72,7 @@ export class UsersService {
   async findAll() {
     try {
       return await this.userEntityRepository.find({
+        where: { isActive: 1 },
         relations: ['rolUsers', 'rolUsers.rol'],
       });
     } catch (error) {
@@ -87,6 +89,7 @@ export class UsersService {
       if (!user) {
         throw new BadRequestException('Usuario no encontrado.');
       }
+      return user;
     } catch (error) {
       throw new Error(`Error fetching user: ${error.message}`);
     }
@@ -142,7 +145,7 @@ export class UsersService {
       await this.userEntityRepository.update(id, { isActive: 0 });
       return { message: 'Usuario eliminado exitosamente.' };
     } catch (error) {
-      throw new Error(`Error deleting user: ${error.message}`);
+      throw new BadRequestException(`Error deleting user: ${error.message}`);
     }
   }
 
