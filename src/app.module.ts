@@ -7,6 +7,9 @@ import { CarsModule } from './vehicle/vehicle.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RolEntity } from './users/entities/rol.entity';
+import { RolUserEntity } from './users/entities/rol_user.entity';
+import { UserEntity } from './users/entities/users.entity';
 
 @Module({
   imports: [
@@ -24,9 +27,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',
         enableArithAbort: true,
       },
-      logging: true,
+      logging: false,
       synchronize: true,
-      entities: [],
+      entities: [UserEntity, RolEntity, RolUserEntity],
     }),
     MaintenanceModule,
     CarsModule,
