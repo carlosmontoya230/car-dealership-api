@@ -3,67 +3,6 @@
 AutoConcession API es una solución RESTful empresarial desarrollada en NestJS para la gestión integral de concesionarios de automóviles. Esta API permite administrar operaciones críticas como compra, venta y mantenimiento de vehículos (nuevos, usados y eléctricos), proporcionando una plataforma escalable y moderna que centraliza todas las operaciones del negocio.
 
 Problema que resuelve: Digitaliza y optimiza la gestión de inventario, clientes y servicios de mantenimiento, eliminando procesos manuales y mejorando la eficiencia operativa.
-
-🏗️ Arquitectura y Diseño
-📁 Estructura de Carpetas (Arquitectura Modular NestJS)
-text
-src/
-├── cars/
-│   ├── entities/
-│   │   └── car.entity.ts
-│   ├── dto/
-│   │   ├── create-car.dto.ts
-│   │   └── update-car.dto.ts
-│   ├── interfaces/
-│   │   └── car.interface.ts
-│   ├── cars.service.ts
-│   ├── cars.controller.ts
-│   ├── cars.module.ts
-│   └── cars.service.spec.ts
-├── maintenance/
-│   ├── entities/
-│   │   └── maintenance.entity.ts
-│   ├── dto/
-│   │   ├── create-maintenance.dto.ts
-│   │   └── update-maintenance.dto.ts
-│   ├── maintenance.service.ts
-│   ├── maintenance.controller.ts
-│   ├── maintenance.module.ts
-│   └── maintenance.service.spec.ts
-├── users/
-│   ├── entities/
-│   │   └── user.entity.ts
-│   ├── dto/
-│   │   ├── create-user.dto.ts
-│   │   └── update-user.dto.ts
-│   ├── users.service.ts
-│   ├── users.controller.ts
-│   ├── users.module.ts
-│   └── users.service.spec.ts
-├── common/
-│   ├── filters/
-│   │   └── http-exception.filter.ts
-│   ├── interceptors/
-│   │   └── transform.interceptor.ts
-│   ├── decorators/
-│   │   └── roles.decorator.ts
-│   └── utils/
-│       └── validation.utils.ts
-├── app.module.ts
-├── main.ts
-└── test/
-    ├── app.e2e-spec.ts
-    └── jest-e2e.json
-🔄 Diagrama de Interacciones entre Módulos
-Diagram
-Code
-
-
-
-
-
-
-
 🛠️ Tecnologías Implementadas
 Framework: NestJS 10.0+
 

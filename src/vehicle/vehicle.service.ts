@@ -38,33 +38,33 @@ export class VehicleService {
     },
   ];
 
-  async findAll(type?: string, status?: string): Promise<CarDto[]> {
+  async findAll(type?: string, status?: string): Promise<VehicleDto[]> {
     console.log('🚀 ~ CarService ~ findAll ~ status:', status);
     console.log('🚀 ~ CarService ~ findAll ~ type:', type);
-    let filteredCars = this.cars;
+    let filteredCars = this.vehicle;
     if (type) {
-      filteredCars = filteredCars.filter((car) => car.type === type);
+      filteredCars = filteredCars.filter((vehicle) => vehicle.type === type);
     }
     if (status) {
-      filteredCars = filteredCars.filter((car) => car.status === status);
+      filteredCars = filteredCars.filter((vehicle) => vehicle.status === status);
     }
     return filteredCars;
   }
 
-  async findOne(id: string): Promise<CarDto> {
-    const car = this.cars.find((car) => car.id === id);
+  async findOne(id: string): Promise<VehicleDto> {
+    const car = this.vehicle.find((vehicle) => vehicle.id === id);
     if (!car) {
       throw new NotFoundException(`Car with id ${id} not found`);
     }
     return car;
   }
 
-  async createCar(carData: CreateCarDto): Promise<CarDto> {
-    const exists = this.cars.find(
-      (car) =>
-        car.brand === carData.brand &&
-        car.model === carData.model &&
-        car.year === carData.year,
+  async createVehicle(carData: CreateVehicleDto): Promise<VehicleDto> {
+    const exists = this.vehicle.find(
+      (vehicle) =>
+        vehicle.brand === carData.brand &&
+        vehicle.model === carData.model &&
+        vehicle.year === carData.year,
     );
     if (exists) {
       throw new ConflictException('Car already exists in inventory');
@@ -72,38 +72,38 @@ export class VehicleService {
     if (carData.price <= 0) {
       throw new BadRequestException('Price must be greater than 0');
     }
-    const newCar: CarDto = {
+    const newCar: VehicleDto = {
       ...carData,
       id: `${Date.now()}`,
     };
-    this.cars.push(newCar);
+    this.vehicle.push(newCar);
     return newCar;
   }
 
-  async deleteCar(id: string): Promise<{ message: string }> {
-    const index = this.cars.findIndex((car) => car.id === id);
+  async deleteVehicle(id: string): Promise<{ message: string }> {
+    const index = this.vehicle.findIndex((car) => car.id === id);
     if (index === -1) {
       throw new NotFoundException(`Car with id ${id} not found`);
     }
-    this.cars.splice(index, 1);
+    this.vehicle.splice(index, 1);
     return { message: 'Car deleted from inventory' };
   }
 
-  async updateCar(id: string, changes: UpdateCarDto): Promise<CarDto> {
-    const index = this.cars.findIndex((car) => car.id === id);
+  async updateVehicle(id: string, changes: UpdateVehicleDto): Promise<VehicleDto> {
+    const index = this.vehicle.findIndex((car) => car.id === id);
     if (index === -1) {
       throw new NotFoundException(`Car with id ${id} not found`);
     }
     if (changes.price && changes.price <= 0) {
       throw new BadRequestException('Price must be greater than 0');
     }
-    const updatedCar = { ...this.cars[index], ...changes };
-    this.cars[index] = updatedCar;
+    const updatedCar = { ...this.vehicle[index], ...changes };
+    this.vehicle[index] = updatedCar;
     return updatedCar;
   }
 
-  async sellCar(id: string): Promise<{ message: string; car: CarDto }> {
-    const car = this.cars.find((car) => car.id === id);
+  async sellVehicle(id: string): Promise<{ message: string; car: VehicleDto }> {
+    const car = this.vehicle.find((car) => car.id === id);
     if (!car) {
       throw new NotFoundException(`Car with id ${id} not found`);
     }

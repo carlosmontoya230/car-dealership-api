@@ -1,27 +1,27 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Put,
-  Delete,
-  Param,
-  Body,
   Query,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
   ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+import { CreateVehicleDto, UpdateVehicleDto } from './dto/cars.dto';
 import { VehicleService } from './vehicle.service';
-import { CreateCarDto, UpdateVehicleDto } from './dto/cars.dto';
 
 @ApiTags('Cars')
 @Controller('cars')
 export class VehicleController {
-  constructor(private readonly cehicleService: VehicleService) {}
+  constructor(private readonly vehicleService: VehicleService) {}
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los autos' })
@@ -39,7 +39,7 @@ export class VehicleController {
     type: String,
   })
   async getCars(@Query('type') type: string, @Query('status') status: string) {
-    return await this.carService.findAll(type, status);
+    return await this.vehicleService.findAll(type, status);
   }
 
   @Get(':id')
@@ -47,15 +47,15 @@ export class VehicleController {
   @ApiParam({ name: 'id', description: 'ID del auto' })
   @ApiResponse({ status: 200, description: 'Auto encontrado' })
   async getCar(@Param('id') id: string) {
-    return await this.carService.findOne(id);
+    return await this.vehicleService.findOne(id);
   }
 
   @Post()
   @ApiOperation({ summary: 'Crear auto' })
-  @ApiBody({ type: CreateCarDto })
+  @ApiBody({ type: CreateVehicleDto })
   @ApiResponse({ status: 201, description: 'Auto creado' })
-  async createCar(@Body() body: CreateCarDto) {
-    return await this.carService.createCar(body);
+  async createCar(@Body() body: CreateVehicleDto) {
+    return await this.vehicleService.createVehicle(body);
   }
 
   @Delete(':id')
@@ -63,7 +63,7 @@ export class VehicleController {
   @ApiParam({ name: 'id', description: 'ID del auto' })
   @ApiResponse({ status: 200, description: 'Auto eliminado' })
   async deleteCar(@Param('id') id: string) {
-    return await this.carService.deleteCar(id);
+    return await this.vehicleService.deleteVehicle(id);
   }
 
   @Put(':id')
@@ -72,7 +72,7 @@ export class VehicleController {
   @ApiBody({ type: UpdateVehicleDto })
   @ApiResponse({ status: 200, description: 'Auto actualizado' })
   async updateCar(@Param('id') id: string, @Body() changes: UpdateVehicleDto) {
-    return await this.carService.updateCar(id, changes);
+    return await this.vehicleService.updateVehicle(id, changes);
   }
 
   @Post(':id/sell')
@@ -80,6 +80,6 @@ export class VehicleController {
   @ApiParam({ name: 'id', description: 'ID del auto' })
   @ApiResponse({ status: 200, description: 'Auto vendido' })
   async sellCar(@Param('id') id: string) {
-    return await this.carService.sellCar(id);
+    return await this.vehicleService.sellVehicle(id);
   }
 }
