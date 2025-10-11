@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsString, IsNumber, IsEnum, IsPositive } from 'class-validator';
 
-export class CreateCarDto {
+export class CreateVehicleDto {
   @ApiProperty({ example: 'Toyota', description: 'Marca del auto' })
   @IsString()
   brand: string;
@@ -35,9 +35,9 @@ export class CreateCarDto {
   status: 'available' | 'sold' | 'maintenance';
 }
 
-export class UpdateCarDto extends PartialType(CreateCarDto) {}
+export class UpdateVehicleDto extends PartialType(CreateVehicleDto) {}
 
-export class CarDto {
+export class VehicleDto {
   @ApiProperty()
   id: string;
 

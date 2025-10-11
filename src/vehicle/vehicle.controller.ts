@@ -15,13 +15,13 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
-import { CarService } from './car.service';
-import { CreateCarDto, UpdateCarDto } from './dto/cars.dto';
+import { VehicleService } from './vehicle.service';
+import { CreateCarDto, UpdateVehicleDto } from './dto/cars.dto';
 
 @ApiTags('Cars')
 @Controller('cars')
-export class CarsController {
-  constructor(private readonly carService: CarService) {}
+export class VehicleController {
+  constructor(private readonly cehicleService: VehicleService) {}
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los autos' })
@@ -69,9 +69,9 @@ export class CarsController {
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar auto por ID' })
   @ApiParam({ name: 'id', description: 'ID del auto' })
-  @ApiBody({ type: UpdateCarDto })
+  @ApiBody({ type: UpdateVehicleDto })
   @ApiResponse({ status: 200, description: 'Auto actualizado' })
-  async updateCar(@Param('id') id: string, @Body() changes: UpdateCarDto) {
+  async updateCar(@Param('id') id: string, @Body() changes: UpdateVehicleDto) {
     return await this.carService.updateCar(id, changes);
   }
 

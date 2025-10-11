@@ -4,11 +4,11 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCarDto, UpdateCarDto, CarDto } from './dto/cars.dto';
+import { CreateVehicleDto, UpdateVehicleDto, VehicleDto } from './dto/cars.dto';
 
 @Injectable()
-export class CarService {
-  private cars: CarDto[] = [
+export class VehicleService {
+  private vehicle: VehicleDto[] = [
     {
       id: '1',
       brand: 'Toyota',
