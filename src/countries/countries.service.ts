@@ -1,16 +1,18 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AxiosAdapter } from '../common/adapters/axios.adapter';
 
 @Injectable()
 export class CountriesService {
+  private readonly geoApiUrl = 'https://wft-geo-db.p.rapidapi.com/v1/geo';
+  private readonly rapidApiHost = 'wft-geo-db.p.rapidapi.com';
+
   constructor(private readonly httpService: AxiosAdapter) {}
 
   async getAllCountries(): Promise<any> {
-    const url = 'https://wft-geo-db.p.rapidapi.com/v1/geo/countries';
-
+    const url = `${this.geoApiUrl}/countries`;
     const headers = {
       'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-      'x-rapidapi-host': 'wft-geo-db.p.rapidapi.com',
+      'x-rapidapi-host': 'wft-geo-db.p.rapidapi.com', // 🔥 igual que el de tu compañero
     };
 
     const limit = 10;
@@ -41,8 +43,42 @@ export class CountriesService {
     }
   }
 
-  async getCities(): Promise<any> {
-    //* Aquí aplicas el servicio  las ciudades por país
+  async getCitiesByCountry(countryId: string): Promise<any> {
+    const url = `${this.geoApiUrl}/cities?countryIds=${countryId}&limit=10&sort=name`;
+
+    const headers = {
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+      'x-rapidapi-host': this.rapidApiHost,
+    };
+
+    try {
+      const response = await this.httpService.get<any>(url, headers);
+      return response.data; // ✅ ya no hay duplicados
+    } catch (error) {
+      throw new HttpException(
+        `Error al obtener las ciudades para ${countryId}: ${error.message}`,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
+
+  // 🔥 NUEVO MÉTODO — para el endpoint /country/:countryId
+  async getCountryById(countryId: string): Promise<any> {
+    const url = `${this.geoApiUrl}/countries/${countryId}`;
+    const headers = {
+      'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+      'x-rapidapi-host': 'wft-geo-db.p.rapidapi.com', // 🔥 igual que el de tu compañero
+    };
+
+    try {
+      const response = await this.httpService.get<any>(url, headers);
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Error al obtener la información del país ${countryId}: ${error.message}`,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
   }
 
   private async delay(ms: number) {

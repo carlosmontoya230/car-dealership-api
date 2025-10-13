@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { HttpAdapter } from '../interface/http-adapter.interface';
 import axios, { AxiosInstance } from 'axios';
+import { HttpAdapter } from '../interface/http-adapter.interface';
 
 @Injectable()
 export class AxiosAdapter implements HttpAdapter {
-  private axios: AxiosInstance = axios;
+  private readonly axios: AxiosInstance = axios.create();
 
   async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
     try {
