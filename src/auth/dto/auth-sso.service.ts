@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare } from 'bcrypt';
@@ -41,6 +41,32 @@ export class AuthSsoService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async getUserByToken(token: string) {
+    const secret = process.env.JWT_SECRET || 'defaultSecret';
+
+    try {
+      const decoded: any = this.jwtService.verify(token, { secret });
+
+      const user = await this.userEntityRepository.findOne({
+        where: { email: decoded.email },
+        relations: ['rolUsers', 'rolUsers.rol'],
+      });
+
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+      return user;
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new BadRequestException('Token expirado.');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new BadRequestException('Token inválido.');
+      }
+      throw new BadRequestException('Token inválido o expirado.');
     }
   }
 }

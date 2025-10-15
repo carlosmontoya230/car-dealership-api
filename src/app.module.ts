@@ -1,3 +1,4 @@
+import { BookingModule } from './booking/booking.module';
 import { CountriesModule } from './countries/countries.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -11,6 +12,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolEntity } from './users/entities/rol.entity';
 import { RolUserEntity } from './users/entities/rol_user.entity';
 import { UserEntity } from './users/entities/users.entity';
+import { VehicleEntity } from './vehicle/entities/vehicle.entity';
+import { BookingEntity } from './booking/entities/booking.entity';
 
 @Module({
   imports: [
@@ -30,13 +33,20 @@ import { UserEntity } from './users/entities/users.entity';
       },
       logging: false,
       synchronize: true,
-      entities: [UserEntity, RolEntity, RolUserEntity],
+      entities: [
+        UserEntity,
+        RolEntity,
+        RolUserEntity,
+        VehicleEntity,
+        BookingEntity,
+      ],
     }),
     MaintenanceModule,
     CarsModule,
     UsersModule,
     AuthSsoModule,
     CountriesModule,
+    BookingModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
