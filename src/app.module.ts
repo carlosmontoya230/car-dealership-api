@@ -1,16 +1,16 @@
-import { CountriesModule } from './countries/countries.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthSsoModule } from './auth/dto/auth-sso.module';
-import { CarsModule } from './vehicle/vehicle.module';
+import { CountriesModule } from './countries/countries.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
-import { UsersModule } from './users/users.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolEntity } from './users/entities/rol.entity';
 import { RolUserEntity } from './users/entities/rol_user.entity';
 import { UserEntity } from './users/entities/users.entity';
+import { UsersModule } from './users/users.module';
+import { CarsModule } from './vehicle/vehicle.module';
 
 @Module({
   imports: [
@@ -37,7 +37,6 @@ import { UserEntity } from './users/entities/users.entity';
     UsersModule,
     AuthSsoModule,
     CountriesModule,
-    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],
