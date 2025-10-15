@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,6 +18,9 @@ import {
 } from '@nestjs/swagger';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/createBooking.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../common/decorators/rolDecorator.service';
+import { RolesGuard } from '../common/guards/rolesguard.service';
 
 @ApiTags('Booking')
 @ApiBearerAuth('access-token')
@@ -26,11 +30,6 @@ export class BookingController {
 
   @Post('/create/')
   @ApiOperation({ summary: 'Crear una reserva' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer <token>',
-    required: true,
-  })
   @ApiResponse({ status: 201, description: 'Reserva creada exitosamente' })
   async createBooking(
     @Body() bookingData: CreateBookingDto,
@@ -39,6 +38,9 @@ export class BookingController {
     return await this.bookingService.createBooking(bookingData, authorization);
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Get('/get-all/')
   @ApiOperation({ summary: 'Obtener todas las reservas activas' })
   @ApiResponse({ status: 200, description: 'Lista de reservas activas' })
@@ -48,11 +50,6 @@ export class BookingController {
 
   @Get('/get-by-user/')
   @ApiOperation({ summary: 'Obtener reservas del usuario autenticado' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer <token>',
-    required: true,
-  })
   @ApiResponse({ status: 200, description: 'Reservas del usuario' })
   async findUserBookings(@Headers('authorization') authorization: string) {
     return await this.bookingService.findUserBookings(authorization);
@@ -60,11 +57,6 @@ export class BookingController {
 
   @Put(':id/cancel')
   @ApiOperation({ summary: 'Cancelar una reserva' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer <token>',
-    required: true,
-  })
   @ApiParam({ name: 'id', description: 'ID de la reserva', type: String })
   @ApiResponse({ status: 200, description: 'Reserva cancelada exitosamente' })
   async cancelBooking(
@@ -76,11 +68,6 @@ export class BookingController {
 
   @Put(':id/finish')
   @ApiOperation({ summary: 'Finalizar una reserva' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer <token>',
-    required: true,
-  })
   @ApiParam({ name: 'id', description: 'ID de la reserva', type: String })
   @ApiResponse({ status: 200, description: 'Reserva finalizada exitosamente' })
   async finishBooking(

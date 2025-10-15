@@ -61,7 +61,6 @@ export class BookingService {
       const user = await this.authSsoService.getUserByToken(authorization);
       const booking = await this.bookingEntityRepository.findOne({
         where: { id: bookingId, isActive: 1 },
-        relations: ['vehicle'],
       });
 
       if (!booking) {
@@ -93,7 +92,6 @@ export class BookingService {
       const user = await this.authSsoService.getUserByToken(authorization);
       const booking = await this.bookingEntityRepository.findOne({
         where: { id: bookingId, isActive: 1 },
-        relations: ['vehicle'],
       });
 
       if (!booking) {

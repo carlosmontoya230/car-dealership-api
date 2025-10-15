@@ -107,7 +107,7 @@ export class VehicleService {
         where: { carPlate: changes.carPlate },
       });
 
-      if (exists) throw new ConflictException('El vehículo ya existe.');
+      if (!exists) throw new ConflictException('El vehículo No existe.');
 
       const updatedVehicle = this.vehicleRepo.merge(vehicle, {
         ...changes,

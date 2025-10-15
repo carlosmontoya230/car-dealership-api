@@ -45,10 +45,10 @@ export class AuthSsoService {
   }
 
   async getUserByToken(token: string) {
+    const cleanedToken = token.startsWith('Bearer ') ? token.slice(7) : token;
     const secret = process.env.JWT_SECRET || 'defaultSecret';
-
     try {
-      const decoded: any = this.jwtService.verify(token, { secret });
+      const decoded: any = this.jwtService.verify(cleanedToken, { secret });
 
       const user = await this.userEntityRepository.findOne({
         where: { email: decoded.email },
