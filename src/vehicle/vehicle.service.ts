@@ -1,116 +1,144 @@
 import {
   Injectable,
-  BadRequestException,
   ConflictException,
   NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
+import { VehicleEntity } from './entities/vehicle.entity';
 import { CreateVehicleDto, UpdateVehicleDto, VehicleDto } from './dto/cars.dto';
 
 @Injectable()
 export class VehicleService {
-  private vehicle: VehicleDto[] = [
-    {
-      id: '1',
-      brand: 'Toyota',
-      model: 'Corolla',
-      year: 2023,
-      price: 25000,
-      type: 'new',
-      status: 'available',
-    },
-    {
-      id: '2',
-      brand: 'Tesla',
-      model: 'Model 3',
-      year: 2023,
-      price: 45000,
-      type: 'electric',
-      status: 'available',
-    },
-    {
-      id: '3',
-      brand: 'Honda',
-      model: 'Civic',
-      year: 2020,
-      price: 18000,
-      type: 'used',
-      status: 'sold',
-    },
-  ];
+  constructor(
+    @InjectRepository(VehicleEntity)
+    private readonly vehicleRepo: Repository<VehicleEntity>,
+  ) {}
 
-  async findAll(type?: string, status?: string): Promise<VehicleDto[]> {
-    console.log('🚀 ~ CarService ~ findAll ~ status:', status);
-    console.log('🚀 ~ CarService ~ findAll ~ type:', type);
-    let filteredCars = this.vehicle;
-    if (type) {
-      filteredCars = filteredCars.filter((vehicle) => vehicle.type === type);
+  async createVehicle(carData: CreateVehicleDto): Promise<VehicleDto> {
+    try {
+      const exists = await this.vehicleRepo.findOne({
+        where: { carPlate: carData.carPlate },
+      });
+
+      if (exists) throw new ConflictException('El vehículo ya existe.');
+
+      const entity = this.vehicleRepo.create({
+        ...carData,
+        id: uuid(),
+        createdDate: Math.floor(Date.now() / 1000),
+        lastUpdateDate: Math.floor(Date.now() / 1000),
+        version: 1,
+        isActive: 1,
+        status: 'available',
+      });
+
+      return await this.vehicleRepo.save(entity);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al crear el vehículo: ${error.message}`,
+      );
     }
-    if (status) {
-      filteredCars = filteredCars.filter((vehicle) => vehicle.status === status);
+  }
+
+  async findAll(
+    type?: string,
+    status?: string,
+    carPlate?: string,
+  ): Promise<VehicleDto[]> {
+    try {
+      const query = this.vehicleRepo.createQueryBuilder('vehicle');
+      query.where('vehicle.isActive = :active', { active: 1 });
+
+      if (type && type.trim() !== '')
+        query.andWhere('LOWER(vehicle.type) LIKE LOWER(:type)', {
+          type: `%${type}%`,
+        });
+
+      if (status && status.trim() !== '')
+        query.andWhere('LOWER(vehicle.status) LIKE LOWER(:status)', {
+          status: `%${status}%`,
+        });
+
+      if (carPlate && carPlate.trim() !== '')
+        query.andWhere('LOWER(vehicle.carPlate) LIKE LOWER(:carPlate)', {
+          carPlate: `%${carPlate}%`,
+        });
+
+      query.orderBy('vehicle.createdDate', 'DESC');
+
+      const result = await query.getMany();
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al obtener los vehículos: ${error.message}`,
+      );
     }
-    return filteredCars;
   }
 
   async findOne(id: string): Promise<VehicleDto> {
-    const car = this.vehicle.find((vehicle) => vehicle.id === id);
-    if (!car) {
-      throw new NotFoundException(`Car with id ${id} not found`);
+    try {
+      const vehicle = await this.vehicleRepo.findOne({ where: { id } });
+      if (!vehicle) {
+        throw new NotFoundException(`Vehículo con ID ${id} no encontrado`);
+      }
+      return vehicle;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al buscar el vehículo: ${error.message}`,
+      );
     }
-    return car;
   }
 
-  async createVehicle(carData: CreateVehicleDto): Promise<VehicleDto> {
-    const exists = this.vehicle.find(
-      (vehicle) =>
-        vehicle.brand === carData.brand &&
-        vehicle.model === carData.model &&
-        vehicle.year === carData.year,
-    );
-    if (exists) {
-      throw new ConflictException('Car already exists in inventory');
+  async updateVehicle(
+    id: string,
+    changes: UpdateVehicleDto,
+  ): Promise<VehicleDto> {
+    try {
+      const vehicle = await this.vehicleRepo.findOne({ where: { id } });
+      if (!vehicle) {
+        throw new NotFoundException(`Vehículo con ID ${id} no encontrado`);
+      }
+
+      const exists = await this.vehicleRepo.findOne({
+        where: { carPlate: changes.carPlate },
+      });
+
+      if (!exists) throw new ConflictException('El vehículo No existe.');
+
+      const updatedVehicle = this.vehicleRepo.merge(vehicle, {
+        ...changes,
+        status: changes.status || vehicle.status,
+        lastUpdateDate: Math.floor(Date.now() / 1000),
+        version: Number(vehicle.version) + 1,
+      });
+
+      return await this.vehicleRepo.save(updatedVehicle);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al actualizar el vehículo: ${error.message}`,
+      );
     }
-    if (carData.price <= 0) {
-      throw new BadRequestException('Price must be greater than 0');
-    }
-    const newCar: VehicleDto = {
-      ...carData,
-      id: `${Date.now()}`,
-    };
-    this.vehicle.push(newCar);
-    return newCar;
   }
 
   async deleteVehicle(id: string): Promise<{ message: string }> {
-    const index = this.vehicle.findIndex((car) => car.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Car with id ${id} not found`);
+    try {
+      const vehicle = await this.vehicleRepo.findOne({ where: { id } });
+      if (!vehicle) {
+        throw new NotFoundException(`Vehículo con ID ${id} no encontrado`);
+      }
+      vehicle.isActive = 0;
+      await this.vehicleRepo.save(vehicle);
+      return {
+        message: `Vehículo con ID ${id} eliminado correctamente (soft delete)`,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al eliminar el vehículo: ${error.message}`,
+      );
     }
-    this.vehicle.splice(index, 1);
-    return { message: 'Car deleted from inventory' };
-  }
-
-  async updateVehicle(id: string, changes: UpdateVehicleDto): Promise<VehicleDto> {
-    const index = this.vehicle.findIndex((car) => car.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Car with id ${id} not found`);
-    }
-    if (changes.price && changes.price <= 0) {
-      throw new BadRequestException('Price must be greater than 0');
-    }
-    const updatedCar = { ...this.vehicle[index], ...changes };
-    this.vehicle[index] = updatedCar;
-    return updatedCar;
-  }
-
-  async sellVehicle(id: string): Promise<{ message: string; car: VehicleDto }> {
-    const car = this.vehicle.find((car) => car.id === id);
-    if (!car) {
-      throw new NotFoundException(`Car with id ${id} not found`);
-    }
-    if (car.status === 'sold') {
-      throw new BadRequestException('Car is already sold');
-    }
-    car.status = 'sold';
-    return { message: 'Car sold successfully', car };
   }
 }

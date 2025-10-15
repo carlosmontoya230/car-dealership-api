@@ -133,6 +133,9 @@ export class UsersController {
     return { message: 'Usuario eliminado correctamente.' };
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Post('/create-rol/')
   @ApiOperation({ summary: 'Crear rol' })
   @ApiBody({
@@ -172,6 +175,9 @@ export class UsersController {
     return newRol;
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @Get('/all/roles/')
   @ApiOperation({ summary: 'Obtener todos los roles' })
   @ApiResponse({

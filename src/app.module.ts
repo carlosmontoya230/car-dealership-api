@@ -1,16 +1,19 @@
+import { BookingModule } from './booking/booking.module';
+import { CountriesModule } from './countries/countries.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthSsoModule } from './auth/dto/auth-sso.module';
-import { CountriesModule } from './countries/countries.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { RolEntity } from './users/entities/rol.entity';
 import { RolUserEntity } from './users/entities/rol_user.entity';
 import { UserEntity } from './users/entities/users.entity';
 import { UsersModule } from './users/users.module';
 import { CarsModule } from './vehicle/vehicle.module';
+import { BookingEntity } from './booking/entities/booking.entity';
+import { VehicleEntity } from './vehicle/entities/vehicle.entity';
 
 @Module({
   imports: [
@@ -30,13 +33,21 @@ import { CarsModule } from './vehicle/vehicle.module';
       },
       logging: false,
       synchronize: true,
-      entities: [UserEntity, RolEntity, RolUserEntity],
+      entities: [
+        UserEntity,
+        RolEntity,
+        RolUserEntity,
+        VehicleEntity,
+        BookingEntity,
+      ],
     }),
     MaintenanceModule,
     CarsModule,
     UsersModule,
     AuthSsoModule,
     CountriesModule,
+    BookingModule,
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],
