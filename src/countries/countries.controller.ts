@@ -1,6 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CountriesService } from './countries.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('countries')
 @Controller('countries')
@@ -12,13 +12,28 @@ export class CountriesController {
     return await this.countriesService.getAllCountries();
   }
 
-  @Get('/cities/')
-  @ApiOperation({ summary: 'Obtener todas las ciudades' })
+  @Get('/cities/:countryId')
+  @ApiOperation({
+    summary: 'Obtener ciudades por código de país (ISO 3166-1 alpha-2)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de ciudades obtenida exitosamente.',
   })
-  async getCities() {
-    //* Aquí aplicas el controlados de las ciudades por país
+  async getCitiesByCountry(@Param('countryId') countryId: string) {
+    return await this.countriesService.getCitiesByCountry(countryId);
+  }
+
+  // 🔥 NUEVO ENDPOINT — solicitado por tu profesor
+  @Get('/country/:countryId')
+  @ApiOperation({
+    summary: 'Obtener información detallada de un país (ISO 3166-1 alpha-2)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Información del país obtenida exitosamente.',
+  })
+  async getCountryById(@Param('countryId') countryId: string) {
+    return await this.countriesService.getCountryById(countryId);
   }
 }
