@@ -1,51 +1,63 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { MaintenanceStatus } from '../entities/maintenance.entity';
 
 export class CreateMaintenanceDto {
-  @ApiProperty({ example: '1', description: 'ID del mantenimiento' })
+  @ApiProperty({ example: 'ABC123', description: 'Vehicle plate' })
   @IsString()
-  id: string;
+  carPlate: string;
 
-  @ApiProperty({ example: '1', description: 'ID del auto' })
+  @ApiProperty({ example: 'Oil change', description: 'Work description' })
   @IsString()
-  carId: string;
+  description: string;
 
+  @ApiProperty({ example: 100.0, description: 'Cost' })
+  @IsNumber()
+  cost: number;
+}
+
+export class UpdateMaintenanceDto extends PartialType(CreateMaintenanceDto) {
   @ApiProperty({
-    example: 'Cambio de aceite',
-    description: 'Tipo de mantenimiento',
-  })
-  @IsString()
-  type: string;
-
-  @ApiProperty({ example: '2025-09-06', description: 'Fecha de mantenimiento' })
-  @IsDateString()
-  date: string;
-
-  @ApiProperty({
-    example: 'Realizado sin inconvenientes',
-    description: 'Observaciones',
+    example: 1700000000,
+    description: 'End date (timestamp)',
     required: false,
   })
   @IsOptional()
-  @IsString()
-  notes?: string;
+  @IsNumber()
+  endDate?: number;
+
+  @ApiProperty({
+    example: 'completed',
+    enum: MaintenanceStatus,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(MaintenanceStatus)
+  status?: MaintenanceStatus;
 }
 
-export class UpdateMaintenanceDto extends PartialType(CreateMaintenanceDto) {}
-
-export class MaintenanceDto {
+export class MaintenanceDto extends PartialType(CreateMaintenanceDto) {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  carId: string;
+  vehicle: any;
 
   @ApiProperty()
-  type: string;
-
-  @ApiProperty()
-  date: string;
+  startDate: number;
 
   @ApiProperty({ required: false })
-  notes?: string;
+  endDate?: number;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  cost: number;
+
+  @ApiProperty()
+  responsible: any;
+
+  @ApiProperty({ enum: MaintenanceStatus })
+  status: MaintenanceStatus;
 }

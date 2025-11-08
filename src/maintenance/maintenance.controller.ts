@@ -6,6 +6,8 @@ import {
   Delete,
   Param,
   Body,
+  Headers,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,6 +15,8 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MaintenanceService } from './maintenance.service';
 import {
@@ -20,17 +24,74 @@ import {
   MaintenanceDto,
   UpdateMaintenanceDto,
 } from './dto/maintenanceController.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../common/decorators/rolDecorator.service';
+import { RolesGuard } from '../common/guards/rolesguard.service';
 
 @ApiTags('Maintenance')
+@ApiBearerAuth('access-token')
 @Controller('maintenance')
 export class MaintenanceController {
   constructor(private readonly maintenanceService: MaintenanceService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'Obtener todos los mantenimientos' })
+  @Post('start')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Start maintenance for a vehicle by plate' })
+  @ApiBody({ type: CreateMaintenanceDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Maintenance started',
+    type: MaintenanceDto,
+  })
+  async startMaintenance(
+    @Body() body: CreateMaintenanceDto,
+    @Headers('authorization') authorization: string,
+  ) {
+    return await this.maintenanceService.startMaintenance(body, authorization);
+  }
+
+  @Put(':id/finish')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Finish maintenance and set vehicle as available' })
+  @ApiParam({ name: 'id', description: 'Maintenance ID' })
   @ApiResponse({
     status: 200,
-    description: 'Lista de mantenimientos',
+    description: 'Maintenance finished',
+    type: MaintenanceDto,
+  })
+  async finishMaintenance(
+    @Param('id') id: string,
+    @Headers('authorization') authorization: string,
+  ) {
+    return await this.maintenanceService.finishMaintenance(id, authorization);
+  }
+
+  @Put(':id/in-progress')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Set maintenance status to in_progress' })
+  @ApiParam({ name: 'id', description: 'Maintenance ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Maintenance set to in_progress',
+    type: MaintenanceDto,
+  })
+  async setInProgress(
+    @Param('id') id: string,
+    @Headers('authorization') authorization: string,
+  ) {
+    return await this.maintenanceService.setInProgress(id, authorization);
+  }
+
+  @Get()
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Get all maintenances' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of maintenances',
     type: [MaintenanceDto],
   })
   async findAll() {
@@ -38,47 +99,48 @@ export class MaintenanceController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener mantenimiento por ID' })
-  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Get maintenance by ID' })
+  @ApiParam({ name: 'id', description: 'Maintenance ID' })
   @ApiResponse({
     status: 200,
-    description: 'Mantenimiento encontrado',
+    description: 'Maintenance found',
     type: MaintenanceDto,
   })
   async findOne(@Param('id') id: string) {
     return await this.maintenanceService.findOne(id);
   }
 
-  @Post()
-  @ApiOperation({ summary: 'Crear mantenimiento' })
-  @ApiBody({ type: CreateMaintenanceDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Mantenimiento creado',
-    type: MaintenanceDto,
-  })
-  async create(@Body() body: CreateMaintenanceDto) {
-    return await this.maintenanceService.createMaintenance(body);
-  }
-
   @Put(':id')
-  @ApiOperation({ summary: 'Actualizar mantenimiento por ID' })
-  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Update maintenance by ID' })
+  @ApiParam({ name: 'id', description: 'Maintenance ID' })
   @ApiBody({ type: UpdateMaintenanceDto })
   @ApiResponse({
     status: 200,
-    description: 'Mantenimiento actualizado',
+    description: 'Maintenance updated',
     type: MaintenanceDto,
   })
-  async update(@Param('id') id: string, @Body() changes: UpdateMaintenanceDto) {
-    return await this.maintenanceService.updateMaintenance(id, changes);
+  async update(
+    @Param('id') id: string,
+    @Body() changes: UpdateMaintenanceDto,
+    @Headers('authorization') authorization: string,
+  ) {
+    return await this.maintenanceService.update(id, changes, authorization);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar mantenimiento por ID' })
-  @ApiParam({ name: 'id', description: 'ID del mantenimiento' })
-  @ApiResponse({ status: 200, description: 'Mantenimiento eliminado' })
-  async delete(@Param('id') id: string) {
-    return await this.maintenanceService.deleteMaintenance(id);
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('mechanic')
+  @ApiOperation({ summary: 'Delete maintenance by ID' })
+  @ApiParam({ name: 'id', description: 'Maintenance ID' })
+  @ApiResponse({ status: 200, description: 'Maintenance deleted' })
+  async delete(
+    @Param('id') id: string,
+    @Headers('authorization') authorization: string,
+  ) {
+    return await this.maintenanceService.delete(id, authorization);
   }
 }
