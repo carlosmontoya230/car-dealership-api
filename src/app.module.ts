@@ -1,3 +1,8 @@
+import { InsuranceModule } from './insurance/insurance.module';
+import { ExtraModule } from './extra/extra.module';
+import { ReturnModule } from './return/return.module';
+import { PaymentModule } from './payment/payment.module';
+import { RentalModule } from './rental/rental.module';
 import { BookingModule } from './booking/booking.module';
 import { CountriesModule } from './countries/countries.module';
 import { Module } from '@nestjs/common';
@@ -14,9 +19,23 @@ import { UsersModule } from './users/users.module';
 import { CarsModule } from './vehicle/vehicle.module';
 import { BookingEntity } from './booking/entities/booking.entity';
 import { VehicleEntity } from './vehicle/entities/vehicle.entity';
+import { MaintenanceEntity } from './maintenance/entities/maintenance.entity';
 
 @Module({
   imports: [
+    InsuranceModule,
+    ExtraModule,
+    ReturnModule,
+    PaymentModule,
+    RentalModule,
+    MaintenanceModule,
+    CarsModule,
+    UsersModule,
+    AuthSsoModule,
+    CountriesModule,
+    BookingModule,
+
+    //**conections orm*/
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: process.env.DB_TYPE as any,
@@ -39,14 +58,9 @@ import { VehicleEntity } from './vehicle/entities/vehicle.entity';
         RolUserEntity,
         VehicleEntity,
         BookingEntity,
+        MaintenanceEntity,
       ],
     }),
-    MaintenanceModule,
-    CarsModule,
-    UsersModule,
-    AuthSsoModule,
-    CountriesModule,
-    BookingModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
