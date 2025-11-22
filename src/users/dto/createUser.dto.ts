@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -27,15 +28,15 @@ export class CreateUserDto {
   @IsString()
   phone: string;
 
-  @ApiProperty({
-    example: ['admin', 'user'],
-    description: 'Lista de roles del usuario',
-    isArray: true,
-    required: false,
-  })
-  @IsOptional()
-  @IsString({ each: true })
-  rolUsers?: string[];
+  // @ApiProperty({
+  //   example: ['admin', 'user'],
+  //   description: 'Lista de roles del usuario',
+  //   isArray: true,
+  //   required: false,
+  // })
+  // @IsOptional()
+  // @IsString({ each: true })
+  // rolUsers?: string[];
 
   @ApiProperty({
     example: 'Calle 123, Ciudad',
@@ -45,4 +46,16 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   address?: string;
+}
+
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+  @ApiProperty({
+    example: ['admin', 'user'],
+    description: 'Lista de roles del usuario',
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ each: true })
+  rolUsers?: string[];
 }

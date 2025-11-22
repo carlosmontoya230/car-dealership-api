@@ -36,8 +36,13 @@ export class AuthSsoService {
 
       return {
         statusCode: 200,
-        user: findUser.email,
-        token,
+        data: {
+          user: {
+            email: findUser.email,
+            roles,
+          },
+          token,
+        },
       };
     } catch (error) {
       throw error;
