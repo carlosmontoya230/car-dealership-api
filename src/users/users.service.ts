@@ -106,6 +106,7 @@ export class UsersService {
     try {
       const user = await this.userEntityRepository.findOne({
         where: { email },
+        relations: ['rolUsers'],
       });
       if (!user) {
         throw new BadRequestException('Usuario no encontrado.');
@@ -115,7 +116,7 @@ export class UsersService {
       }
       const { rolUsers, ...userData } = userDto;
       if (Object.keys(userData).length > 0) {
-        await this.userEntityRepository.update(email, userData);
+        await this.userEntityRepository.update(user.id, userData);
       }
       if (rolUsers && rolUsers.length > 0) {
         await this.rolUserEntityRepository.delete({ userEmail: email });
@@ -128,6 +129,7 @@ export class UsersService {
             isActive: 1,
             userEmail: email,
             rolId: rolId,
+            user: user,
           });
           await this.rolUserEntityRepository.save(rolUsuario);
         }

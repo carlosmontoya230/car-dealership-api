@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/createUser.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/createUser.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/rolesguard.service';
 import { Roles } from '../common/decorators/rolDecorator.service';
@@ -94,7 +94,7 @@ export class UsersController {
     example: 'usuario@ejemplo.com',
   })
   @ApiBody({
-    type: CreateUserDto,
+    type: UpdateUserDto,
     description: 'Datos para actualizar el usuario',
   })
   @ApiResponse({
@@ -114,7 +114,7 @@ export class UsersController {
   })
   async updateUser(
     @Param('email') email: string,
-    @Body() userDto: CreateUserDto,
+    @Body() userDto: UpdateUserDto,
   ) {
     return await this.usersService.updateUser(email, userDto);
   }
