@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/createUser.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/createUser.dto';
 import { RolEntity } from './entities/rol.entity';
 import { RolUserEntity } from './entities/rol_user.entity';
 import { UserEntity } from './entities/users.entity';
@@ -47,19 +47,26 @@ export class UsersService {
       });
 
       await this.userEntityRepository.save(newUser);
-      for (const rolId of userDto.rolUsers) {
-        const rolUsuario = this.rolUserEntityRepository.create({
-          id: uuid(),
-          createdDate: Math.floor(Date.now() / 1000),
-          lastUpdateDate: Math.floor(Date.now() / 1000),
-          version: 1,
-          isActive: 1,
-          userEmail: userDto.email,
-          rolId: rolId,
-          user: newUser,
-        });
-        await this.rolUserEntityRepository.save(rolUsuario);
+
+      // Asignar siempre el rol 'standard'
+      const standardRol = await this.rolEntityRepository.findOne({
+        where: { name: 'standard' },
+      });
+      if (!standardRol) {
+        throw new BadRequestException('El rol "standard" no existe.');
       }
+      const rolUsuario = this.rolUserEntityRepository.create({
+        id: uuid(),
+        createdDate: Math.floor(Date.now() / 1000),
+        lastUpdateDate: Math.floor(Date.now() / 1000),
+        version: 1,
+        isActive: 1,
+        userEmail: userDto.email,
+        rolId: standardRol.id,
+        user: newUser,
+      });
+      await this.rolUserEntityRepository.save(rolUsuario);
+
       return await this.findOne(userDto.email);
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -95,10 +102,11 @@ export class UsersService {
     }
   }
 
-  async updateUser(email: string, userDto: CreateUserDto) {
+  async updateUser(email: string, userDto: UpdateUserDto) {
     try {
       const user = await this.userEntityRepository.findOne({
         where: { email },
+        relations: ['rolUsers'],
       });
       if (!user) {
         throw new BadRequestException('Usuario no encontrado.');
@@ -108,7 +116,7 @@ export class UsersService {
       }
       const { rolUsers, ...userData } = userDto;
       if (Object.keys(userData).length > 0) {
-        await this.userEntityRepository.update(email, userData);
+        await this.userEntityRepository.update(user.id, userData);
       }
       if (rolUsers && rolUsers.length > 0) {
         await this.rolUserEntityRepository.delete({ userEmail: email });
@@ -121,6 +129,7 @@ export class UsersService {
             isActive: 1,
             userEmail: email,
             rolId: rolId,
+            user: user,
           });
           await this.rolUserEntityRepository.save(rolUsuario);
         }
