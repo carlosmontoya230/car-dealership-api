@@ -22,14 +22,33 @@ export class UsersService {
 
   async createUser(userDto: CreateUserDto) {
     try {
-      const existingUser = await this.userEntityRepository.findOne({
+      // Verificar si el correo ya existe
+      const existingUserByEmail = await this.userEntityRepository.findOne({
         where: { email: userDto.email },
       });
-      if (existingUser) {
+      if (existingUserByEmail) {
         throw new BadRequestException(
           'El correo ya está en uso. Crea uno nuevo.',
         );
       }
+
+      const phoneRegex = /^\+\d{1,3}\d{7,14}$/;
+      if (!phoneRegex.test(userDto.phone)) {
+        throw new BadRequestException(
+          'El número de teléfono debe tener formato internacional, por ejemplo: +573001234567',
+        );
+      }
+
+      // Verificar si el teléfono ya existe
+      const existingUserByPhone = await this.userEntityRepository.findOne({
+        where: { phone: userDto.phone },
+      });
+      if (existingUserByPhone) {
+        throw new BadRequestException(
+          'El número de teléfono ya está en uso. Crea uno nuevo.',
+        );
+      }
+
       const hashedPassword = await bcrypt.hash(userDto.password, 10);
       const newUser = this.userEntityRepository.create({
         ...userDto,
@@ -102,6 +121,21 @@ export class UsersService {
     }
   }
 
+  async getUserByEmail(email: string) {
+    try {
+      const user = await this.userEntityRepository.findOne({
+        where: { email },
+        select: ['email', 'phone'],
+      });
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+      return user;
+    } catch (error) {
+      throw new Error(`Error fetching user by email: ${error.message}`);
+    }
+  }
+
   async updateUser(email: string, userDto: UpdateUserDto) {
     try {
       const user = await this.userEntityRepository.findOne({
@@ -111,6 +145,22 @@ export class UsersService {
       if (!user) {
         throw new BadRequestException('Usuario no encontrado.');
       }
+
+      const phoneRegex = /^\+\d{1,3}\d{7,14}$/;
+      if (!phoneRegex.test(userDto.phone)) {
+        throw new BadRequestException(
+          'El número de teléfono debe tener formato internacional, por ejemplo: +573001234567',
+        );
+      }
+
+      // Verificar si el teléfono ya existe
+      const existingUserByPhone = await this.userEntityRepository.findOne({
+        where: { phone: userDto.phone },
+      });
+      if (existingUserByPhone) {
+        throw new BadRequestException('El número de teléfono ya está en uso.');
+      }
+
       if (userDto.password) {
         userDto.password = await bcrypt.hash(userDto.password, 10);
       }
@@ -196,6 +246,77 @@ export class UsersService {
       return await this.rolEntityRepository.find();
     } catch (error) {
       throw new Error(`Error fetching roles: ${error.message}`);
+    }
+  }
+
+  //* save verification code to user temp *//
+  async saveVerificationCode(phoneNumber: string, code: string) {
+    try {
+      const user = await this.userEntityRepository.findOne({
+        where: { phone: phoneNumber },
+      });
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+      user.codeVerify = code;
+      await this.userEntityRepository.save(user);
+      return { message: 'Código de verificación guardado.' };
+    } catch (error) {
+      throw new Error(`Error saving verification code: ${error.message}`);
+    }
+  }
+
+  async verifyCodeByEmail(email: string, code: string) {
+    try {
+      const user = await this.userEntityRepository.findOne({
+        where: { email },
+      });
+      if (!user || user.codeVerify !== code) {
+        return { valid: false, message: 'Código incorrecto o expirado' };
+      }
+
+      user.verified = true;
+      await this.userEntityRepository.save(user);
+
+      return { valid: true, message: 'Código verificado correctamente' };
+    } catch (error) {
+      throw new Error(`Error verifying code: ${error.message}`);
+    }
+  }
+
+  async clearVerificationCodeByEmail(email: string) {
+    try {
+      const user = await this.userEntityRepository.findOne({
+        where: { email },
+      });
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+      user.codeVerify = null;
+      user.verified = false;
+      await this.userEntityRepository.save(user);
+      return { message: 'Código de verificación limpiado.' };
+    } catch (error) {
+      throw new Error(`Error clearing verification code: ${error.message}`);
+    }
+  }
+
+  async changePassword(email: string, newPassword: string) {
+    try {
+      const user = await this.userEntityRepository.findOne({
+        where: { email },
+      });
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      user.codeVerify = null;
+      user.verified = false;
+      await this.userEntityRepository.save(user);
+      return { message: 'Contraseña actualizada correctamente.' };
+    } catch (error) {
+      throw new Error(`Error changing password: ${error.message}`);
     }
   }
 }
