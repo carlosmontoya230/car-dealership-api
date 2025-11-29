@@ -10,6 +10,8 @@ import { UserEntity } from '../../users/entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolEntity } from '../../users/entities/rol.entity';
 import { RolUserEntity } from '../../users/entities/rol_user.entity';
+import { SmsModule } from '../sms/sms.module';
+import { SmsService } from '../sms/sms.service';
 config();
 @Module({
   imports: [
@@ -20,6 +22,6 @@ config();
     }),
   ],
   controllers: [AuthSsoController],
-  providers: [AuthSsoService, UsersService, JwtStrategy],
+  providers: [AuthSsoService, UsersService, JwtStrategy, SmsService],
 })
 export class AuthSsoModule {}

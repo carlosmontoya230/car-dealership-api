@@ -1,32 +1,38 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  Get,
-  Query,
   BadRequestException,
+  Body,
+  Controller,
+  Get,
   Headers,
+  Post,
+  Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
-  ApiTags,
+  ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiQuery,
-  ApiBearerAuth,
+  ApiTags,
 } from '@nestjs/swagger';
-import { AuthSsoService } from './auth-sso.service';
-import { LoginDto } from './create-auth-sso.dto';
-import { UserEntity } from '../../users/entities/users.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { randomInt } from 'crypto';
 import { Roles } from '../../common/decorators/rolDecorator.service';
 import { RolesGuard } from '../../common/guards/rolesguard.service';
+import { UserEntity } from '../../users/entities/users.entity';
+import { UsersService } from '../../users/users.service';
+import { SmsService } from '../sms/sms.service';
+import { AuthSsoService } from './auth-sso.service';
+import { LoginDto } from './create-auth-sso.dto';
 
 @ApiTags('auth-sso')
 @Controller('auth-sso')
 export class AuthSsoController {
-  constructor(private readonly authSsoService: AuthSsoService) {}
+  constructor(
+    private readonly authSsoService: AuthSsoService,
+    private readonly smsService: SmsService,
+    private usersService: UsersService,
+  ) {}
 
   @ApiOperation({ summary: 'Login de usuario' })
   @ApiResponse({
@@ -64,5 +70,60 @@ export class AuthSsoController {
       throw new BadRequestException('Token no encontrado en el header.');
     }
     return await this.authSsoService.getUserByToken(token);
+  }
+
+  //* reset password *//
+  @ApiOperation({ summary: 'Limpiar código de verificación por email' })
+  @ApiResponse({ status: 200, description: 'Código de verificación limpiado.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @Post('clear-verification-code-by-email')
+  async clearVerificationCodeByEmail(@Query('email') email: string) {
+    return await this.usersService.clearVerificationCodeByEmail(email);
+  }
+
+  @ApiOperation({ summary: 'Cambiar contraseña por email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña actualizada correctamente.',
+  })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @Post('change-password')
+  async changePassword(
+    @Query('email') email: string,
+    @Query('newPassword') newPassword: string,
+  ) {
+    return await this.usersService.changePassword(email, newPassword);
+  }
+
+  //* Password recovery via SMS *//
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña por email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Código enviado al teléfono del usuario.',
+  })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @Post('request-password-recovery')
+  async requestPasswordRecovery(@Query('email') email: string) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user || !user.phone) {
+      throw new BadRequestException(
+        'Usuario no encontrado o sin teléfono registrado.',
+      );
+    }
+    const code = randomInt(100000, 999999).toString();
+    await this.usersService.saveVerificationCode(user.phone, code);
+    await this.smsService.sendVerificationCode(user.phone, code);
+    return { message: 'Código enviado al teléfono registrado.' };
+  }
+
+  @ApiOperation({ summary: 'Validar código de verificación por email' })
+  @ApiResponse({ status: 200, description: 'Código validado correctamente.' })
+  @ApiResponse({ status: 400, description: 'Código inválido o expirado.' })
+  @Post('validate-code')
+  async validateCode(
+    @Query('email') email: string,
+    @Query('code') code: string,
+  ) {
+    return await this.usersService.verifyCodeByEmail(email, code);
   }
 }

@@ -21,4 +21,10 @@ export class UserEntity extends BaseEntity {
 
   @Column({ type: 'varchar' })
   password: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  codeVerify: string | null;
+
+  @Column({ type: 'bit', default: false })
+  verified: boolean;
 }

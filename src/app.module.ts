@@ -1,3 +1,4 @@
+import { SmsModule } from './auth/sms/sms.module';
 import { InsuranceModule } from './insurance/insurance.module';
 import { ExtraModule } from './extra/extra.module';
 import { ReturnModule } from './return/return.module';
@@ -34,6 +35,7 @@ import { MaintenanceEntity } from './maintenance/entities/maintenance.entity';
     AuthSsoModule,
     CountriesModule,
     BookingModule,
+    SmsModule,
 
     //**conections orm*/
     ConfigModule.forRoot({ isGlobal: true }),
