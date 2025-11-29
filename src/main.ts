@@ -10,7 +10,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   });
 
   app.useGlobalPipes(
@@ -49,7 +48,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1/carsDealership/doc', app, document);
   const config = app.get<ConfigService>(ConfigService);
   const port = config.getOrThrow('PORT', process.env.APP_PORT || 3000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   Logger.log(`🚀 Documentación iniciado host api/v1/indicators/doc`);
   Logger.log(`🚀 Servidor iniciado en el puerto ${process.env.APP_PORT}`);
